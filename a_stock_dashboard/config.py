@@ -30,4 +30,10 @@ def _setting(name: str, default: str = "0") -> str:
 
 
 USE_LIVE_DATA = _setting("A_STOCK_USE_LIVE_DATA") == "1"
-PUBLIC_MODE = _setting("A_STOCK_PUBLIC_MODE") == "1"
+
+_public_mode_setting = _setting("A_STOCK_PUBLIC_MODE", "auto").lower()
+PUBLIC_MODE = (
+    not HOLDINGS_FILE.exists()
+    if _public_mode_setting == "auto"
+    else _public_mode_setting == "1"
+)
