@@ -1,0 +1,9 @@
+{
+  "style": "波段交易",
+  "risk_tolerance": "中等",
+  "max_total_position_pct": 60,
+  "max_single_position_pct": 15,
+  "prefer_etf": true,
+  "allow_intraday_chase": false,
+  "review_time": "盘前、10:00、14:30、收盘后"
+}
