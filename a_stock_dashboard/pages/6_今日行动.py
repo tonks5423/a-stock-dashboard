@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_MODE, TRADING_PROFILE_FILE, current_refresh_bucket, refresh_schedule_caption
+from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_HOLDINGS_FILE, PUBLIC_MODE, TRADING_PROFILE_FILE, current_refresh_bucket, refresh_schedule_caption
 from modules.action_engine import build_trade_plan, load_trading_profile
 from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import action_plan_panel, compact_list_panel, holding_action_cards, inject_page_style, scenario_cards, signal_legend
@@ -38,7 +38,7 @@ mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
 st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {mode_label} · {refresh_schedule_caption()} · 配置：{TRADING_PROFILE_FILE}")
 signal_legend()
 if PUBLIC_MODE:
-    st.info("当前为公开展示模式：行动方案基于示例持仓生成，不暴露你的真实持仓。")
+    st.info(f"当前为公开展示模式：行动方案基于 {PUBLIC_HOLDINGS_FILE.name} 生成。")
 for warning in [market_result.warning, overseas_result.warning, sectors_result.warning]:
     if warning:
         st.warning(warning)

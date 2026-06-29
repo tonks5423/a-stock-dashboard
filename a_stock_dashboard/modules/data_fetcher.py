@@ -223,7 +223,12 @@ def _score_sectors(data: pd.DataFrame) -> pd.DataFrame:
 
 def load_holdings(path) -> pd.DataFrame:
     if PUBLIC_MODE:
-        return _sample_public_holdings()
+        try:
+            from config import PUBLIC_HOLDINGS_FILE
+
+            return pd.read_csv(PUBLIC_HOLDINGS_FILE, dtype={"stock_code": str})
+        except FileNotFoundError:
+            return _sample_public_holdings()
     try:
         return pd.read_csv(path, dtype={"stock_code": str})
     except FileNotFoundError:
@@ -243,7 +248,7 @@ def _sample_public_holdings() -> pd.DataFrame:
                 "target_price": 72.0,
                 "current_price": 66.8,
                 "current_market_value": 66800,
-                "note": "公开演示",
+                "note": "公开展示",
             },
             {
                 "stock_code": "510300",
@@ -255,7 +260,7 @@ def _sample_public_holdings() -> pd.DataFrame:
                 "target_price": 4.18,
                 "current_price": 3.95,
                 "current_market_value": 39500,
-                "note": "公开演示",
+                "note": "公开展示",
             },
         ]
     )

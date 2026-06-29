@@ -11,6 +11,7 @@ DATA_DIR = BASE_DIR / "data"
 DATABASE_DIR = BASE_DIR / "database"
 
 HOLDINGS_FILE = DATA_DIR / "holdings.csv"
+PUBLIC_HOLDINGS_FILE = DATA_DIR / "public_holdings.csv"
 WATCHLIST_FILE = DATA_DIR / "watchlist.csv"
 STOCK_LIST_FILE = DATA_DIR / "stock_list.csv"
 TRADING_PROFILE_FILE = DATA_DIR / "trading_profile.json"

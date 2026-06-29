@@ -39,13 +39,13 @@ A_STOCK_USE_LIVE_DATA=1 streamlit run app.py
 
 ## 公开给别人看
 
-公开部署时请开启公开展示模式，避免读取你的真实持仓：
+公开部署时请开启公开展示模式，网站会读取 `data/public_holdings.csv`：
 
 ```bash
 A_STOCK_PUBLIC_MODE=1 streamlit run app.py
 ```
 
-详细部署步骤见 `DEPLOY.md`。公开部署不要上传 `data/holdings.csv`，仓库里保留 `data/holdings.example.csv` 即可。
+详细部署步骤见 `DEPLOY.md`。公开部署不要上传 `data/holdings.csv`，仓库里保留 `data/public_holdings.csv` 即可。
 
 ## 维护持仓
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_MODE, TRADING_PROFILE_FILE, current_refresh_bucket, refresh_schedule_caption
+from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_HOLDINGS_FILE, PUBLIC_MODE, TRADING_PROFILE_FILE, current_refresh_bucket, refresh_schedule_caption
 from modules.action_engine import build_trade_plan, load_trading_profile
 from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import action_plan_panel, compact_list_panel, guidance_panel, holding_action_cards, holding_summary_cards, inject_page_style, metric_card, scenario_cards, show_table, signal_legend
@@ -38,7 +38,7 @@ mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
 st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {mode_label} · {refresh_schedule_caption()} · 仅做辅助分析，不连接券商账户，不自动下单。")
 signal_legend()
 if PUBLIC_MODE:
-    st.info("当前为公开展示模式：持仓使用演示数据，不读取你的本地真实持仓文件。")
+    st.info(f"当前为公开展示模式：持仓读取 {PUBLIC_HOLDINGS_FILE.name}，用于给亲友查看。")
 for warning in [market_result.warning, overseas_result.warning, sectors_result.warning]:
     if warning:
         st.warning(warning)
@@ -92,7 +92,7 @@ with col_a:
         candidate_view[["stock_code", "stock_name", "industry", "price", "pct_chg", "sector_score", "trend_score", "risk_score", "final_score", "score_label"]],
     )
 with col_b:
-    st.subheader("公开示例持仓" if PUBLIC_MODE else "我的持仓")
+    st.subheader("我的公开持仓" if PUBLIC_MODE else "我的持仓")
     holdings = load_holdings(HOLDINGS_FILE)
     reports = []
     for _, holding in holdings.iterrows():
