@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, REFRESH_SECONDS
+from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
 from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks
 from modules.display import inject_page_style, show_table, signal_legend
 from modules.market_analyzer import summarize_market
@@ -14,8 +14,8 @@ st.set_page_config(page_title=f"{APP_TITLE} · 个股筛选", layout="wide")
 inject_page_style()
 
 
-@st.cache_data(ttl=REFRESH_SECONDS)
-def load_data():
+@st.cache_data
+def load_data(refresh_bucket: str):
     market = fetch_market_overview()
     sectors = add_sector_state(fetch_sector_rank().data)
     summary = summarize_market(market.data)
@@ -23,9 +23,9 @@ def load_data():
     return market, sectors, stocks, screen_candidates(stocks)
 
 
-market, sectors, stocks, candidates = load_data()
+market, sectors, stocks, candidates = load_data(current_refresh_bucket())
 st.title("个股筛选")
-st.caption(f"数据更新时间：{market.update_time}")
+st.caption(f"数据更新时间：{market.update_time} · {refresh_schedule_caption()}")
 signal_legend()
 
 min_score = st.slider("最低最终评分", 0, 100, 60)

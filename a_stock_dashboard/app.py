@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_MODE, REFRESH_SECONDS, TRADING_PROFILE_FILE
+from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_MODE, TRADING_PROFILE_FILE, current_refresh_bucket, refresh_schedule_caption
 from modules.action_engine import build_trade_plan, load_trading_profile
 from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import action_plan_panel, compact_list_panel, guidance_panel, holding_action_cards, holding_summary_cards, inject_page_style, metric_card, scenario_cards, show_table, signal_legend
@@ -18,8 +18,8 @@ st.set_page_config(page_title=APP_TITLE, page_icon="📈", layout="wide")
 inject_page_style()
 
 
-@st.cache_data(ttl=REFRESH_SECONDS)
-def load_dashboard_data():
+@st.cache_data
+def load_dashboard_data(refresh_bucket: str):
     market_result = fetch_market_overview()
     overseas_result = fetch_overseas_market()
     sectors_result = fetch_sector_rank()
@@ -31,11 +31,11 @@ def load_dashboard_data():
     return market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates
 
 
-market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates = load_dashboard_data()
+market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates = load_dashboard_data(current_refresh_bucket())
 
 st.title(APP_TITLE)
 mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
-st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {mode_label} · 仅做辅助分析，不连接券商账户，不自动下单。")
+st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {mode_label} · {refresh_schedule_caption()} · 仅做辅助分析，不连接券商账户，不自动下单。")
 signal_legend()
 if PUBLIC_MODE:
     st.info("当前为公开展示模式：持仓使用演示数据，不读取你的本地真实持仓文件。")

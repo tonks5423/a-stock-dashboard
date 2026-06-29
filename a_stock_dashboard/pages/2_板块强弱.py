@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, REFRESH_SECONDS
+from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
 from modules.data_fetcher import fetch_sector_rank
 from modules.display import inject_page_style, show_table, signal_legend
 from modules.sector_analyzer import add_sector_state
@@ -12,15 +12,15 @@ st.set_page_config(page_title=f"{APP_TITLE} · 板块强弱", layout="wide")
 inject_page_style()
 
 
-@st.cache_data(ttl=REFRESH_SECONDS)
-def load_data():
+@st.cache_data
+def load_data(refresh_bucket: str):
     result = fetch_sector_rank()
     return result, add_sector_state(result.data)
 
 
-result, sectors = load_data()
+result, sectors = load_data(current_refresh_bucket())
 st.title("板块强弱")
-st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source}")
+st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source} · {refresh_schedule_caption()}")
 signal_legend()
 if result.warning:
     st.warning(result.warning)

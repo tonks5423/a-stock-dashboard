@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_MODE, REFRESH_SECONDS
+from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_MODE, current_refresh_bucket, refresh_schedule_caption
 from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import holding_summary_cards, inject_page_style, show_table, signal_legend
 from modules.holding_analyzer import analyze_holding, stock_data_from_holding
@@ -15,8 +15,8 @@ st.set_page_config(page_title=f"{APP_TITLE} · 持仓诊断", layout="wide")
 inject_page_style()
 
 
-@st.cache_data(ttl=REFRESH_SECONDS)
-def load_data():
+@st.cache_data
+def load_data(refresh_bucket: str):
     market = fetch_market_overview()
     sectors = add_sector_state(fetch_sector_rank().data)
     summary = summarize_market(market.data)
@@ -25,10 +25,10 @@ def load_data():
     return market, sectors, stocks, holdings
 
 
-market, sectors, stocks, holdings = load_data()
+market, sectors, stocks, holdings = load_data(current_refresh_bucket())
 st.title("持仓诊断")
 mode_label = "公开展示模式，使用演示持仓" if PUBLIC_MODE else f"持仓文件：{HOLDINGS_FILE}"
-st.caption(f"{mode_label} · 数据更新时间：{market.update_time}")
+st.caption(f"{mode_label} · 数据更新时间：{market.update_time} · {refresh_schedule_caption()}")
 signal_legend()
 if PUBLIC_MODE:
     st.info("当前为公开展示模式：这里展示的是演示持仓，不读取你的本地真实持仓文件。")

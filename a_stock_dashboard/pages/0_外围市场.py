@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from config import APP_TITLE, REFRESH_SECONDS
+from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
 from modules.data_fetcher import fetch_overseas_market
 from modules.display import inject_page_style, metric_card, show_table, signal_legend
 from modules.overseas_analyzer import analyze_overseas_sentiment
@@ -12,16 +12,16 @@ st.set_page_config(page_title=f"{APP_TITLE} · 外围市场", layout="wide")
 inject_page_style()
 
 
-@st.cache_data(ttl=REFRESH_SECONDS)
-def load_data():
+@st.cache_data
+def load_data(refresh_bucket: str):
     result = fetch_overseas_market()
     return result, analyze_overseas_sentiment(result.data)
 
 
-result, summary = load_data()
+result, summary = load_data(current_refresh_bucket())
 
 st.title("外围市场")
-st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source} · 外围市场只作为盘前情绪参考")
+st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source} · {refresh_schedule_caption()} · 外围市场只作为盘前情绪参考")
 signal_legend()
 if result.warning:
     st.warning(result.warning)
