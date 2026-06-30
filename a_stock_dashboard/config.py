@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATABASE_DIR = BASE_DIR / "database"
+LIVE_CACHE_DIR = DATA_DIR / "live_cache"
 
 HOLDINGS_FILE = DATA_DIR / "holdings.csv"
 PUBLIC_HOLDINGS_FILE = DATA_DIR / "public_holdings.csv"
@@ -36,6 +37,7 @@ def _setting(name: str, default: str = "0") -> str:
 
 
 USE_LIVE_DATA = _setting("A_STOCK_USE_LIVE_DATA") == "1"
+USE_CACHED_DATA = _setting("A_STOCK_USE_CACHED_DATA", "1") == "1"
 
 _public_mode_setting = _setting("A_STOCK_PUBLIC_MODE", "auto").lower()
 PUBLIC_MODE = (

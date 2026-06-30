@@ -10,7 +10,8 @@ A_STOCK_USE_LIVE_DATA=0
 ```
 
 - `A_STOCK_PUBLIC_MODE=1`：使用 `data/public_holdings.csv`，不读取本地私人文件 `data/holdings.csv`。
-- `A_STOCK_USE_LIVE_DATA=0`：使用示例行情，避免免费云环境中 AKShare 接口慢或失败。
+- `A_STOCK_USE_LIVE_DATA=0`：网页读取定时缓存，避免每个访问者现场请求 AKShare。
+- `A_STOCK_USE_CACHED_DATA=1`：优先使用 `data/live_cache/` 中 GitHub Actions 定时抓取的数据。
 - 如果你确认服务器网络稳定，可以把 `A_STOCK_USE_LIVE_DATA` 改成 `1`。
 
 ## Streamlit Community Cloud
@@ -23,9 +24,10 @@ A_STOCK_USE_LIVE_DATA=0
 ```toml
 A_STOCK_PUBLIC_MODE = "1"
 A_STOCK_USE_LIVE_DATA = "0"
+A_STOCK_USE_CACHED_DATA = "1"
 ```
 
-5. 部署后打开公网地址，左侧菜单可以访问市场总览、外围市场、持仓诊断、今日行动等页面。
+5. GitHub Actions 会在北京时间交易日 11:30、14:30 自动更新 `data/live_cache/`，部署后打开公网地址，左侧菜单可以访问市场总览、外围市场、持仓诊断、今日行动等页面。
 
 ## 本地私人模式
 

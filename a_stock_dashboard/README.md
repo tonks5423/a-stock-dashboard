@@ -27,7 +27,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-默认使用快速示例数据，避免 AKShare 实时接口慢或不可用时页面一直加载。
+默认优先读取 `data/live_cache/` 中的定时真实行情缓存；如果缓存不存在，则使用快速示例数据，避免 AKShare 实时接口慢或不可用时页面一直加载。
 
 如需请求 AKShare 实时/准实时接口：
 
@@ -36,6 +36,10 @@ A_STOCK_USE_LIVE_DATA=1 streamlit run app.py
 ```
 
 如果 AKShare 或网络/接口不可用，应用会自动使用示例数据兜底，并在页面顶部显示提示。
+
+## 定时更新真实数据
+
+GitHub Actions 会在北京时间交易日 11:30、14:30 自动运行 `scripts/update_live_cache.py`，抓取 AKShare 行情并提交到 `data/live_cache/`。公开网站默认读取这份缓存，因此没有人打开网页时也会到点更新。
 
 ## 公开给别人看
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -10,9 +11,12 @@ from .score_engine import calculate_sector_score
 from .utils import amount_yi, now_text
 
 try:
-    from config import PUBLIC_MODE, USE_LIVE_DATA
+    from config import LIVE_CACHE_DIR, PUBLIC_HOLDINGS_FILE, PUBLIC_MODE, USE_CACHED_DATA, USE_LIVE_DATA
 except ImportError:
+    LIVE_CACHE_DIR = Path("data/live_cache")
+    PUBLIC_HOLDINGS_FILE = Path("data/public_holdings.csv")
     PUBLIC_MODE = False
+    USE_CACHED_DATA = True
     USE_LIVE_DATA = False
 
 
@@ -26,6 +30,72 @@ class FetchResult:
 
 def _live_data_warning(data_name: str, exc: Exception) -> str:
     return f"AKShare {data_name}接口暂不可用，已自动切换到示例数据。详情：{type(exc).__name__}"
+
+
+def _cache_path(name: str) -> Path:
+    return Path(LIVE_CACHE_DIR) / f"{name}.json"
+
+
+def _serialize(value):
+    if isinstance(value, pd.DataFrame):
+        return {"__type__": "dataframe", "records": value.to_dict("records")}
+    if isinstance(value, dict):
+        return {key: _serialize(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_serialize(item) for item in value]
+    if isinstance(value, (np.integer, np.floating)):
+        return value.item()
+    return value
+
+
+def _deserialize(value):
+    if isinstance(value, dict) and value.get("__type__") == "dataframe":
+        return pd.DataFrame(value.get("records", []))
+    if isinstance(value, dict):
+        return {key: _deserialize(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_deserialize(item) for item in value]
+    return value
+
+
+def read_fetch_cache(name: str) -> FetchResult | None:
+    path = _cache_path(name)
+    if not path.exists():
+        return None
+    try:
+        import json
+
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return FetchResult(
+            data=_deserialize(payload.get("data")),
+            update_time=payload.get("update_time", now_text()),
+            source=payload.get("source", "定时真实缓存"),
+            warning=payload.get("warning"),
+        )
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def write_fetch_cache(name: str, result: FetchResult) -> None:
+    import json
+
+    Path(LIVE_CACHE_DIR).mkdir(parents=True, exist_ok=True)
+    payload = {
+        "update_time": result.update_time,
+        "source": result.source,
+        "warning": result.warning,
+        "data": _serialize(result.data),
+    }
+    _cache_path(name).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _cached_or_sample(name: str, sample_data, update_time: str) -> FetchResult:
+    if USE_CACHED_DATA:
+        cached = read_fetch_cache(name)
+        if cached is not None:
+            cached.source = f"{cached.source}缓存"
+            return cached
+    return FetchResult(sample_data, update_time, "示例数据")
 
 
 def _sample_indices() -> pd.DataFrame:
@@ -87,7 +157,7 @@ def _sample_overseas_market() -> pd.DataFrame:
 def fetch_overseas_market() -> FetchResult:
     update_time = now_text()
     if not USE_LIVE_DATA:
-        return FetchResult(_sample_overseas_market(), update_time, "示例数据")
+        return _cached_or_sample("overseas", _sample_overseas_market(), update_time)
     try:
         # AKShare global interfaces are not uniform across assets. Keep the live
         # path conservative so page rendering never depends on one fragile source.
@@ -99,13 +169,18 @@ def fetch_overseas_market() -> FetchResult:
             data.loc[data["symbol"].eq("S&P 500"), "pct_chg"] = float(str(global_index["涨跌幅"].iloc[-1]).replace("%", ""))
         return FetchResult(data, update_time, "AKShare + 示例补全")
     except Exception as exc:  # noqa: BLE001
+        if USE_CACHED_DATA:
+            cached = read_fetch_cache("overseas")
+            if cached is not None:
+                cached.warning = _live_data_warning("外围市场", exc)
+                return cached
         return FetchResult(_sample_overseas_market(), update_time, "示例数据", _live_data_warning("外围市场", exc))
 
 
 def fetch_market_overview() -> FetchResult:
     update_time = now_text()
     if not USE_LIVE_DATA:
-        return FetchResult(_sample_market(), update_time, "示例数据")
+        return _cached_or_sample("market", _sample_market(), update_time)
     try:
         import akshare as ak
 
@@ -149,13 +224,18 @@ def fetch_market_overview() -> FetchResult:
             "AKShare",
         )
     except Exception as exc:  # noqa: BLE001
+        if USE_CACHED_DATA:
+            cached = read_fetch_cache("market")
+            if cached is not None:
+                cached.warning = _live_data_warning("实时行情", exc)
+                return cached
         return FetchResult(_sample_market(), update_time, "示例数据", _live_data_warning("实时行情", exc))
 
 
 def fetch_sector_rank() -> FetchResult:
     update_time = now_text()
     if not USE_LIVE_DATA:
-        return FetchResult(_sample_sectors(), update_time, "示例数据")
+        return _cached_or_sample("sectors", _sample_sectors(), update_time)
     try:
         import akshare as ak
 
@@ -186,6 +266,11 @@ def fetch_sector_rank() -> FetchResult:
         data = pd.concat(frames, ignore_index=True)
         return FetchResult(_score_sectors(data), update_time, "AKShare")
     except Exception as exc:  # noqa: BLE001
+        if USE_CACHED_DATA:
+            cached = read_fetch_cache("sectors")
+            if cached is not None:
+                cached.warning = _live_data_warning("板块", exc)
+                return cached
         return FetchResult(_sample_sectors(), update_time, "示例数据", _live_data_warning("板块", exc))
 
 
@@ -271,6 +356,11 @@ def _sample_public_holdings() -> pd.DataFrame:
 
 
 def get_sample_stocks(sectors: pd.DataFrame) -> pd.DataFrame:
+    if USE_CACHED_DATA:
+        cached = read_fetch_cache("stocks")
+        if cached is not None and isinstance(cached.data, pd.DataFrame) and not cached.data.empty:
+            return cached.data
+
     sector_lookup = dict(zip(sectors["sector_name"], sectors["score"]))
     return pd.DataFrame(
         [
