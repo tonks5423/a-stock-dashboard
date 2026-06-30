@@ -4,7 +4,8 @@ import streamlit as st
 
 from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_HOLDINGS_FILE, PUBLIC_MODE, TRADING_PROFILE_FILE, current_refresh_bucket, refresh_schedule_caption
 from modules.action_engine import build_trade_plan, load_trading_profile
-from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, live_cache_status, load_holdings
+from modules import data_fetcher
+from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import action_plan_panel, compact_list_panel, holding_action_cards, inject_page_style, scenario_cards, signal_legend
 from modules.funds_analyzer import summarize_funds
 from modules.holding_analyzer import analyze_holding, stock_data_from_holding
@@ -16,6 +17,12 @@ from modules.stock_analyzer import score_stocks, screen_candidates
 
 st.set_page_config(page_title=f"{APP_TITLE} · 今日行动", layout="wide")
 inject_page_style()
+
+
+def safe_live_cache_status() -> str:
+    if hasattr(data_fetcher, "live_cache_status"):
+        return data_fetcher.live_cache_status()
+    return "行情缓存：状态函数暂不可用，请等待云端完成最新部署"
 
 
 @st.cache_data
@@ -37,7 +44,7 @@ market_result, overseas_result, sectors_result, market_summary, overseas_summary
 
 st.title("今日行动")
 mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
-st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {live_cache_status()} · {mode_label} · {refresh_schedule_caption()} · 配置：{TRADING_PROFILE_FILE}")
+st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {safe_live_cache_status()} · {mode_label} · {refresh_schedule_caption()} · 配置：{TRADING_PROFILE_FILE}")
 signal_legend()
 if PUBLIC_MODE:
     st.info(f"当前为公开展示模式：行动方案基于 {PUBLIC_HOLDINGS_FILE.name} 生成。")
