@@ -6,6 +6,7 @@ from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_HOLDINGS_FILE, PUBLIC_MODE, 
 from modules.action_engine import build_trade_plan, load_trading_profile
 from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import action_plan_panel, compact_list_panel, guidance_panel, holding_action_cards, holding_summary_cards, inject_page_style, metric_card, scenario_cards, show_table, signal_legend
+from modules.funds_analyzer import summarize_funds
 from modules.guidance import generate_operation_guidance
 from modules.holding_analyzer import analyze_holding, stock_data_from_holding
 from modules.market_analyzer import summarize_market
@@ -28,10 +29,11 @@ def load_dashboard_data(refresh_bucket: str):
     sectors = add_sector_state(sectors_result.data)
     stocks = score_stocks(get_sample_stocks(sectors), market_summary["score"])
     candidates = screen_candidates(stocks)
-    return market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates
+    funds_summary = summarize_funds(market_result.data, sectors, stocks)
+    return market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates
 
 
-market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates = load_dashboard_data(current_refresh_bucket())
+market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates = load_dashboard_data(current_refresh_bucket())
 
 st.title(APP_TITLE)
 mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
@@ -80,6 +82,25 @@ with o4:
     metric_card("A50 / 人民币", f"{overseas_lookup.get('A50', 0):+.2f}% / {overseas_lookup.get('USD/CNH', 0):+.2f}%")
 st.info(overseas_summary["conclusion"])
 
+st.subheader("资金流向")
+f1, f2, f3, f4 = st.columns(4)
+with f1:
+    metric_card("资金评分", f"{funds_summary['score']:.1f} / 100")
+with f2:
+    metric_card("资金状态", funds_summary["liquidity_state"], funds_summary["flow_state"])
+with f3:
+    metric_card("成交额 / 5日均", f"{funds_summary['amount_yi']:.0f} 亿", f"{funds_summary['vs_5d_pct']:+.1f}%")
+with f4:
+    metric_card("成交额 / 20日均", f"{funds_summary['amount_20d_avg_yi']:.0f} 亿", f"{funds_summary['vs_20d_pct']:+.1f}%")
+st.info(funds_summary["conclusion"])
+money_left, money_right = st.columns([1, 1])
+with money_left:
+    st.caption("资金活跃板块")
+    show_table(funds_summary["hot_money_sectors"], ["sector_name", "sector_type", "pct_chg", "amount_yi", "amount_ratio", "score"])
+with money_right:
+    st.caption("成交活跃个股")
+    show_table(funds_summary["active_stocks"], ["stock_code", "stock_name", "industry", "pct_chg", "amount_yi", "turnover_rate", "volume_ratio", "final_score"])
+
 st.subheader("最强板块")
 sector_view = sectors[["sector_name", "sector_type", "pct_chg", "pct_chg_5d", "pct_chg_10d", "amount_ratio", "leading_stock", "score", "state", "score_reason"]].head(10)
 show_table(sector_view)
@@ -103,7 +124,7 @@ with col_b:
         reports.append(analyze_holding(holding.to_dict(), stock_data, sector_data, market_result.data))
     if reports:
         holding_summary_cards(reports)
-        show_table(reports)
+        show_table(reports, ["stock_code", "stock_name", "profit", "profit_pct", "market_value", "status", "money_flow_state", "amount_yi", "volume_ratio", "turnover_rate", "money_flow_hint"])
     else:
         st.info("请在 data/holdings.csv 中维护持仓。")
 
@@ -129,6 +150,7 @@ trading_profile = load_trading_profile(TRADING_PROFILE_FILE)
 trade_plan = build_trade_plan(
     market_summary=market_summary,
     overseas_summary=overseas_summary,
+    funds_summary=funds_summary,
     sectors=sectors,
     candidates=candidates,
     holding_reports=reports,
@@ -152,6 +174,7 @@ with gap_col:
 guidance = generate_operation_guidance(
     market_summary=market_summary,
     overseas_summary=overseas_summary,
+    funds_summary=funds_summary,
     sectors=sectors,
     candidates=candidates,
     holding_reports=reports,

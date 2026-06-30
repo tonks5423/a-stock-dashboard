@@ -20,7 +20,15 @@ COLUMN_LABELS = {
     "pct_chg_20d": "20日涨跌幅(%)",
     "amount": "成交额",
     "amount_yi": "成交额(亿)",
+    "amount_5d_avg_yi": "5日均成交额(亿)",
+    "amount_20d_avg_yi": "20日均成交额(亿)",
     "amount_ratio": "成交额变化",
+    "vs_5d_pct": "较5日均量(%)",
+    "vs_20d_pct": "较20日均量(%)",
+    "liquidity_state": "资金状态",
+    "flow_state": "放量状态",
+    "money_flow_state": "资金信号",
+    "money_flow_hint": "资金提示",
     "up_count": "上涨家数",
     "down_count": "下跌家数",
     "limit_up_count": "涨停家数",
@@ -92,6 +100,8 @@ PERCENT_COLUMNS = {
     "10日涨跌幅(%)",
     "20日涨跌幅(%)",
     "浮动盈亏(%)",
+    "较5日均量(%)",
+    "较20日均量(%)",
 }
 
 DISTANCE_PERCENT_COLUMNS = {
@@ -105,6 +115,8 @@ DISTANCE_PERCENT_COLUMNS = {
 MONEY_COLUMNS = {
     "成交额",
     "成交额(亿)",
+    "5日均成交额(亿)",
+    "20日均成交额(亿)",
     "买入价格",
     "当前价格",
     "当前市价",
@@ -402,9 +414,9 @@ def _cell_style(value) -> str:
         return "color: #991b1b; background-color: #fee2e2; font-weight: 700;"
     if text in {"中风险", "警惕", "换股风险"}:
         return "color: #92400e; background-color: #fef3c7; font-weight: 700;"
-    if text in {"低风险", "强势持有", "可加仓观察", "主线强板块", "活跃板块", "强候选，重点观察"}:
+    if text in {"低风险", "强势持有", "可加仓观察", "主线强板块", "活跃板块", "强候选，重点观察", "增量资金活跃", "资金面可交易", "明显放量", "温和放量", "放量上涨", "资金活跃"}:
         return "color: #166534; background-color: #dcfce7; font-weight: 700;"
-    if text in {"弱势板块", "偏弱，不买", "回避"}:
+    if text in {"弱势板块", "偏弱，不买", "回避", "缩量谨慎", "明显缩量", "温和缩量", "放量下跌"}:
         return "color: #991b1b; background-color: #fee2e2; font-weight: 700;"
     return ""
 
@@ -597,6 +609,7 @@ def holding_action_cards(rows: list[dict]) -> None:
         profit_class = "signal-up" if profit_pct > 0 else "signal-down" if profit_pct < 0 else "signal-flat"
         status = str(row.get("status", ""))
         risk = str(row.get("risk_level", ""))
+        money_flow = str(row.get("money_flow_state", ""))
         chip_class = "status-chip--risk" if status in {"止损", "减仓"} or risk in {"高风险", "极高风险"} else "status-chip--warn" if status in {"警惕", "换股风险"} else "status-chip--ok"
         cards.append(
             f"""
@@ -610,6 +623,7 @@ def holding_action_cards(rows: list[dict]) -> None:
                     <span class="{profit_class}" style="margin-left:10px;">{escape(_format_directional(profit_pct, "%"))}</span>
                 </div>
                 <div class="card-line"><span class="card-label">保护价：</span>{escape(_smart_number(float(row.get("protect_price", 0) or 0)))}</div>
+                <div class="card-line"><span class="card-label">资金：</span>{escape(money_flow)}</div>
                 <div class="card-line"><span class="card-label">触发：</span>{escape(str(row.get("trigger", "")))}</div>
                 <div class="card-line"><span class="card-label">动作：</span>{escape(str(row.get("action", "")))}</div>
             </div>

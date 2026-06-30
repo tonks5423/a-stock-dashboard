@@ -43,6 +43,6 @@ for _, holding in holdings.iterrows():
 
 if reports:
     holding_summary_cards(reports)
-    show_table(reports)
+    show_table(reports, ["stock_code", "stock_name", "profit", "profit_pct", "market_value", "status", "money_flow_state", "amount_yi", "volume_ratio", "turnover_rate", "money_flow_hint", "risk_level", "risk_items"])
 else:
     st.info("暂无持仓，请维护 data/holdings.csv。")

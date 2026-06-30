@@ -46,6 +46,7 @@ columns = [
     "amount_yi",
     "turnover_rate",
     "volume_ratio",
+    "volume_score",
     "above_ma5",
     "above_ma10",
     "above_ma20",

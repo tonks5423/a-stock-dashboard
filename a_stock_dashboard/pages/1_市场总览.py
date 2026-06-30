@@ -3,9 +3,12 @@ from __future__ import annotations
 import streamlit as st
 
 from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
-from modules.data_fetcher import fetch_market_overview
+from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks
 from modules.display import inject_page_style, metric_card, show_table, signal_legend
+from modules.funds_analyzer import summarize_funds
 from modules.market_analyzer import summarize_market
+from modules.sector_analyzer import add_sector_state
+from modules.stock_analyzer import score_stocks
 
 
 st.set_page_config(page_title=f"{APP_TITLE} · 市场总览", layout="wide")
@@ -15,10 +18,14 @@ inject_page_style()
 @st.cache_data
 def load_data(refresh_bucket: str):
     result = fetch_market_overview()
-    return result, summarize_market(result.data)
+    sectors = add_sector_state(fetch_sector_rank().data)
+    summary = summarize_market(result.data)
+    stocks = score_stocks(get_sample_stocks(sectors), summary["score"])
+    funds = summarize_funds(result.data, sectors, stocks)
+    return result, summary, funds
 
 
-result, summary = load_data(current_refresh_bucket())
+result, summary, funds = load_data(current_refresh_bucket())
 st.title("市场总览")
 st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source} · {refresh_schedule_caption()}")
 signal_legend()
@@ -39,3 +46,16 @@ with cols[4]:
 
 st.info(summary["conclusion"])
 show_table(result.data["indices"], ["name", "code", "pct_chg"])
+
+st.subheader("资金流向")
+f1, f2, f3, f4 = st.columns(4)
+with f1:
+    metric_card("资金评分", f"{funds['score']:.1f} / 100")
+with f2:
+    metric_card("资金状态", funds["liquidity_state"], funds["flow_state"])
+with f3:
+    metric_card("成交额 / 5日均", f"{funds['amount_yi']:.0f} 亿", f"{funds['vs_5d_pct']:+.1f}%")
+with f4:
+    metric_card("成交额 / 20日均", f"{funds['amount_20d_avg_yi']:.0f} 亿", f"{funds['vs_20d_pct']:+.1f}%")
+st.info(funds["conclusion"])
+show_table(funds["hot_money_sectors"], ["sector_name", "sector_type", "pct_chg", "amount_yi", "amount_ratio", "score"])

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .funds_analyzer import label_stock_money_flow
 from .risk_analyzer import analyze_stock_risk
 from .utils import safe_float
 
@@ -71,6 +72,7 @@ def analyze_holding(holding, stock_data, sector_data, market_data):
         reason = "个股表现不够突出，需关注是否持续弱于板块。"
 
     risk = analyze_stock_risk(stock_data, sector_data, market_data, holding)
+    money_flow = label_stock_money_flow(stock_data)
     return {
         "stock_code": holding.get("stock_code"),
         "stock_name": holding.get("stock_name", stock_data.get("stock_name")),
@@ -92,4 +94,9 @@ def analyze_holding(holding, stock_data, sector_data, market_data):
         "reason": reason,
         "risk_level": risk["risk_level"],
         "risk_items": "；".join(risk["risk_items"]),
+        "money_flow_state": money_flow["money_flow_state"],
+        "amount_yi": money_flow["amount_yi"],
+        "volume_ratio": money_flow["volume_ratio"],
+        "turnover_rate": money_flow["turnover_rate"],
+        "money_flow_hint": money_flow["money_flow_hint"],
     }

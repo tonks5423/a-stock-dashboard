@@ -6,6 +6,7 @@ from config import APP_TITLE, HOLDINGS_FILE, PUBLIC_HOLDINGS_FILE, PUBLIC_MODE, 
 from modules.action_engine import build_trade_plan, load_trading_profile
 from modules.data_fetcher import fetch_market_overview, fetch_overseas_market, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import action_plan_panel, compact_list_panel, holding_action_cards, inject_page_style, scenario_cards, signal_legend
+from modules.funds_analyzer import summarize_funds
 from modules.holding_analyzer import analyze_holding, stock_data_from_holding
 from modules.market_analyzer import summarize_market
 from modules.overseas_analyzer import analyze_overseas_sentiment
@@ -28,10 +29,11 @@ def load_data(refresh_bucket: str):
     stocks = score_stocks(get_sample_stocks(sectors), market_summary["score"])
     candidates = screen_candidates(stocks)
     holdings = load_holdings(HOLDINGS_FILE)
-    return market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates, holdings
+    funds_summary = summarize_funds(market_result.data, sectors, stocks)
+    return market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates, holdings
 
 
-market_result, overseas_result, sectors_result, market_summary, overseas_summary, sectors, stocks, candidates, holdings = load_data(current_refresh_bucket())
+market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates, holdings = load_data(current_refresh_bucket())
 
 st.title("今日行动")
 mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
@@ -67,6 +69,7 @@ for _, row in stocks.iterrows():
 trade_plan = build_trade_plan(
     market_summary=market_summary,
     overseas_summary=overseas_summary,
+    funds_summary=funds_summary,
     sectors=sectors,
     candidates=candidates,
     holding_reports=reports,
@@ -75,6 +78,7 @@ trade_plan = build_trade_plan(
 )
 
 action_plan_panel(trade_plan)
+st.info(f"资金面：{funds_summary['liquidity_state']} / {funds_summary['flow_state']}。{funds_summary['reason']} {funds_summary['conclusion']}")
 
 left, right = st.columns([1, 1])
 with left:

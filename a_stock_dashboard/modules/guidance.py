@@ -8,6 +8,7 @@ from .utils import now_text, safe_float
 def generate_operation_guidance(
     market_summary: dict,
     overseas_summary: dict,
+    funds_summary: dict,
     sectors: pd.DataFrame,
     candidates: pd.DataFrame,
     holding_reports: list[dict],
@@ -15,6 +16,7 @@ def generate_operation_guidance(
 ) -> dict:
     market_score = safe_float(market_summary.get("score"))
     overseas_sentiment = overseas_summary.get("sentiment", "中性")
+    funds_score = safe_float(funds_summary.get("score"))
     top_sectors = sectors.head(3)["sector_name"].tolist() if not sectors.empty else []
     strong_candidates = candidates.head(3)["stock_name"].tolist() if not candidates.empty else []
 
@@ -28,6 +30,13 @@ def generate_operation_guidance(
     else:
         lines.append("市场处于弱势区，重点是控制回撤，减少新开仓和高波动追涨。")
 
+    if funds_score >= 75:
+        lines.append(f"资金面偏强：{funds_summary.get('reason', '')} 可以重点跟随放量板块，但避免追连续急拉。")
+    elif funds_score >= 55:
+        lines.append(f"资金面中性：{funds_summary.get('reason', '')} 等回踩承接和量价确认。")
+    else:
+        lines.append(f"资金面偏弱：{funds_summary.get('reason', '')} 缩量环境下优先控制仓位，不主动追高。")
+
     if overseas_sentiment == "偏强":
         lines.append(f"外围情绪偏强，{overseas_summary.get('premarket_action', '盘前情绪有支撑，但仍需要以 A 股开盘后的成交和板块承接为准。')}")
     elif overseas_sentiment == "偏弱":
@@ -36,7 +45,9 @@ def generate_operation_guidance(
         lines.append(f"外围情绪中性，{overseas_summary.get('premarket_action', '今天更应以盘中板块强弱和市场广度作为判断依据。')}")
 
     if top_sectors:
-        lines.append(f"板块观察顺序：{'、'.join(top_sectors)}。优先看强板块内趋势和量能同步的个股。")
+        hot_money = "、".join(funds_summary.get("top_sector_names", [])[:3])
+        money_text = f"；资金活跃板块：{hot_money}" if hot_money else ""
+        lines.append(f"板块观察顺序：{'、'.join(top_sectors)}{money_text}。优先看强板块内趋势和量能同步的个股。")
     else:
         lines.append("当前没有明确强板块，暂时不要为了交易而交易。")
 

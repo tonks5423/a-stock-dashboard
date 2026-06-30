@@ -52,19 +52,31 @@ def _position_band(market_score: float, overseas_summary: dict, risk_count: int,
     return "只处理持仓，暂不主动开新仓", f"建议总仓位 0%-{min(20, max_total)}%，单一标的不超过 {min(max_single, 8)}%"
 
 
+def _adjust_for_funds(decision: str, position_advice: str, funds_summary: dict) -> tuple[str, str]:
+    funds_score = safe_float(funds_summary.get("score"))
+    flow_state = str(funds_summary.get("flow_state", ""))
+    if funds_score < 50:
+        return "资金不足，先防守再观察", f"{position_advice}；缩量或资金弱时不追高。"
+    if funds_score >= 78 and "积极" not in decision:
+        return decision, f"{position_advice}；若放量主线确认，可小幅提高观察仓积极性。"
+    if "缩量" in flow_state:
+        return decision, f"{position_advice}；当前{flow_state}，买点必须更苛刻。"
+    return decision, position_advice
+
+
 def _top_names(frame: pd.DataFrame, name_col: str, count: int = 3) -> list[str]:
     if frame is None or frame.empty or name_col not in frame:
         return []
     return [str(name) for name in frame.head(count)[name_col].tolist() if str(name)]
 
 
-def _opening_scenarios(market_score: float, overseas_summary: dict, sectors: pd.DataFrame) -> list[dict]:
+def _opening_scenarios(market_score: float, overseas_summary: dict, funds_summary: dict, sectors: pd.DataFrame) -> list[dict]:
     top_sectors = "、".join(_top_names(sectors, "sector_name", 3)) or "最先放量走强的板块"
     overseas_action = overseas_summary.get("premarket_action", "以开盘后成交和板块承接为准。")
     return [
         {
             "scenario": "高开剧本",
-            "condition": "指数高开且 10:00 前成交放大，强板块没有冲高回落。",
+            "condition": f"指数高开且 10:00 前成交放大，资金面不是{funds_summary.get('flow_state', '明显缩量')}，强板块没有冲高回落。",
             "action": f"只看 {top_sectors} 的回踩承接，不追连续急拉；若外围偏弱，高开更要等二次确认。",
             "watch": overseas_action,
         },
@@ -90,6 +102,8 @@ def _holding_action(item: dict) -> dict:
     target = safe_float(item.get("target_price"))
     profit_pct = safe_float(item.get("profit_pct"))
     status = str(item.get("status", ""))
+    money_flow_state = str(item.get("money_flow_state", ""))
+    money_flow_hint = str(item.get("money_flow_hint", ""))
 
     if stop_loss:
         protect_price = stop_loss
@@ -107,6 +121,9 @@ def _holding_action(item: dict) -> dict:
     elif status in {"止损", "减仓"}:
         action = "优先降风险，反弹不能收回关键价位时不加仓。"
         trigger = f"跌破或无法收回 {protect_price}"
+    elif money_flow_state == "放量下跌":
+        action = "资金放大但价格下跌，先按风险处理，不急着补仓。"
+        trigger = f"量比维持高位且不能收回 {protect_price}，继续降风险。"
     elif status in {"警惕", "换股风险"} or profit_pct < -8:
         action = "暂停加仓，观察是否重新站回短期强弱线。"
         if buy_price > 0:
@@ -130,7 +147,9 @@ def _holding_action(item: dict) -> dict:
         "protect_price": protect_price,
         "trigger": trigger,
         "action": action,
-        "reason": f"{protect_reason}；{item.get('reason', '')}",
+        "reason": f"{protect_reason}；{item.get('reason', '')}；{money_flow_hint}",
+        "money_flow_state": money_flow_state,
+        "money_flow_hint": money_flow_hint,
     }
 
 
@@ -146,6 +165,7 @@ def _data_gaps() -> list[dict]:
 def build_trade_plan(
     market_summary: dict,
     overseas_summary: dict,
+    funds_summary: dict,
     sectors: pd.DataFrame,
     candidates: pd.DataFrame,
     holding_reports: list[dict],
@@ -154,6 +174,7 @@ def build_trade_plan(
 ) -> dict:
     market_score = safe_float(market_summary.get("score"))
     decision, position_advice = _position_band(market_score, overseas_summary, len(risk_rows), profile)
+    decision, position_advice = _adjust_for_funds(decision, position_advice, funds_summary)
     top_sectors = _top_names(sectors, "sector_name", 4)
     top_candidates = _top_names(candidates, "stock_name", 4)
     overseas_bias = overseas_summary.get("opening_bias", "中性")
@@ -169,6 +190,7 @@ def build_trade_plan(
     if top_candidates:
         watch_focus.append({"item": "候选池", "content": "、".join(top_candidates), "action": "等待回踩承接、放量突破或评分继续改善。"})
     watch_focus.append({"item": "外围映射", "content": overseas_bias, "action": overseas_summary.get("premarket_action", "以盘中确认信号为准。")})
+    watch_focus.append({"item": "资金状态", "content": f"{funds_summary.get('liquidity_state')} / {funds_summary.get('flow_state')}", "action": funds_summary.get("conclusion", "以成交额和量比确认。")})
 
     return {
         "generated_at": now_text(),
@@ -177,10 +199,10 @@ def build_trade_plan(
         "style": profile.get("style", "波段交易"),
         "review_time": profile.get("review_time", "盘前、盘中、收盘后"),
         "watch_focus": watch_focus,
-        "opening_scenarios": _opening_scenarios(market_score, overseas_summary, sectors),
+        "opening_scenarios": _opening_scenarios(market_score, overseas_summary, funds_summary, sectors),
         "holding_actions": holding_actions,
         "buy_sell_rules": [
-            {"item": "买入触发", "content": "市场温度不低于 60，目标板块仍在强势前排，个股放量突破或回踩不破。"},
+            {"item": "买入触发", "content": "市场温度不低于 60，资金面不缩量，目标板块仍在强势前排，个股放量突破或回踩不破。"},
             {"item": "禁止追高", "content": "连续急拉、距涨停太近、板块冲高回落时不新增仓位。"},
             {"item": "减仓触发", "content": "跌破保护线、放量跌破 20 日线、或明显弱于同板块前排。"},
             {"item": "换股触发", "content": "持仓弱于板块，同时候选池出现更高评分且风险更低的标的。"},

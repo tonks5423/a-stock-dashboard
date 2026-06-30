@@ -46,6 +46,8 @@ def _sample_market() -> dict:
     return {
         "indices": indices,
         "amount_yi": 9480,
+        "amount_5d_avg_yi": 8720,
+        "amount_20d_avg_yi": 8150,
         "up_count": 3270,
         "down_count": 1780,
         "limit_up_count": 62,
@@ -135,6 +137,8 @@ def fetch_market_overview() -> FetchResult:
             {
                 "indices": index_df,
                 "amount_yi": total_amount_yi,
+                "amount_5d_avg_yi": 9000,
+                "amount_20d_avg_yi": 8500,
                 "up_count": up_count,
                 "down_count": down_count,
                 "limit_up_count": limit_up_count,
@@ -274,5 +278,9 @@ def get_sample_stocks(sectors: pd.DataFrame) -> pd.DataFrame:
             {"stock_code": "000001", "stock_name": "平安银行", "industry": "银行", "concept": "金融", "price": 11.12, "pct_chg": 0.8, "pct_chg_5d": 2.2, "pct_chg_10d": 3.8, "pct_chg_20d": 5.1, "amount_yi": 34.1, "turnover_rate": 0.7, "volume_ratio": 1.1, "ma5": 10.95, "ma10": 10.82, "ma20": 10.55, "ma60": 10.10, "sector_score": sector_lookup.get("银行", 60), "is_st": False, "is_delist": False},
             {"stock_code": "600519", "stock_name": "贵州茅台", "industry": "白酒", "concept": "消费", "price": 1488.0, "pct_chg": -1.2, "pct_chg_5d": -2.0, "pct_chg_10d": -3.5, "pct_chg_20d": -4.8, "amount_yi": 42.5, "turnover_rate": 0.3, "volume_ratio": 1.4, "ma5": 1510, "ma10": 1522, "ma20": 1530, "ma60": 1560, "sector_score": sector_lookup.get("白酒", 45), "is_st": False, "is_delist": False},
             {"stock_code": "688981", "stock_name": "中芯国际", "industry": "半导体", "concept": "半导体", "price": 66.8, "pct_chg": 4.2, "pct_chg_5d": 9.1, "pct_chg_10d": 13.5, "pct_chg_20d": 28.0, "amount_yi": 96.0, "turnover_rate": 3.6, "volume_ratio": 2.0, "ma5": 62, "ma10": 59, "ma20": 54, "ma60": 48, "sector_score": sector_lookup.get("半导体", 85), "is_st": False, "is_delist": False},
+            {"stock_code": "601236", "stock_name": "红塔证券", "industry": "证券", "concept": "金融", "price": 6.83, "pct_chg": -1.15, "pct_chg_5d": -4.6, "pct_chg_10d": -7.8, "pct_chg_20d": -12.4, "amount_yi": 3.8, "turnover_rate": 2.1, "volume_ratio": 1.62, "ma5": 7.05, "ma10": 7.22, "ma20": 7.68, "ma60": 8.15, "sector_score": sector_lookup.get("证券", 58), "is_st": False, "is_delist": False},
+            {"stock_code": "510330", "stock_name": "华夏300", "industry": "沪深300ETF", "concept": "宽基ETF", "price": 5.176, "pct_chg": 0.42, "pct_chg_5d": 1.6, "pct_chg_10d": 2.4, "pct_chg_20d": 3.8, "amount_yi": 7.2, "turnover_rate": 0.8, "volume_ratio": 1.08, "ma5": 5.12, "ma10": 5.08, "ma20": 4.98, "ma60": 4.72, "sector_score": 66, "is_st": False, "is_delist": False},
+            {"stock_code": "518800", "stock_name": "黄金基金", "industry": "黄金ETF", "concept": "黄金", "price": 8.856, "pct_chg": -0.28, "pct_chg_5d": -1.1, "pct_chg_10d": 0.6, "pct_chg_20d": 4.2, "amount_yi": 5.6, "turnover_rate": 1.2, "volume_ratio": 0.86, "ma5": 8.91, "ma10": 8.84, "ma20": 8.62, "ma60": 8.18, "sector_score": 62, "is_st": False, "is_delist": False},
+            {"stock_code": "400219", "stock_name": "碳元5", "industry": "退市整理", "concept": "高风险", "price": 0.37, "pct_chg": 0.0, "pct_chg_5d": -8.5, "pct_chg_10d": -16.2, "pct_chg_20d": -28.0, "amount_yi": 0.04, "turnover_rate": 0.3, "volume_ratio": 0.52, "ma5": 0.39, "ma10": 0.42, "ma20": 0.49, "ma60": 0.66, "sector_score": 20, "is_st": False, "is_delist": True},
         ]
     )
