@@ -3,7 +3,7 @@ from __future__ import annotations
 import streamlit as st
 
 from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
-from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks
+from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks, live_cache_status
 from modules.display import inject_page_style, metric_card, show_table, signal_legend
 from modules.funds_analyzer import summarize_funds
 from modules.market_analyzer import summarize_market
@@ -27,7 +27,7 @@ def load_data(refresh_bucket: str):
 
 result, summary, funds = load_data(current_refresh_bucket())
 st.title("市场总览")
-st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source} · {refresh_schedule_caption()}")
+st.caption(f"数据更新时间：{result.update_time} · 数据源：{result.source} · {live_cache_status()} · {refresh_schedule_caption()}")
 signal_legend()
 if result.warning:
     st.warning(result.warning)

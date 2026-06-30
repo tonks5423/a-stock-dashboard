@@ -39,7 +39,7 @@ A_STOCK_USE_LIVE_DATA=1 streamlit run app.py
 
 ## 定时更新真实数据
 
-GitHub Actions 会在北京时间交易日 11:30、14:30 自动运行 `scripts/update_live_cache.py`，抓取 AKShare 行情并提交到 `data/live_cache/`。公开网站默认读取这份缓存，因此没有人打开网页时也会到点更新。
+GitHub Actions 会在北京时间交易日 11:30、11:40、11:50、14:30、14:40、14:50 自动运行 `scripts/update_live_cache.py`，抓取 AKShare 行情并提交到 `data/live_cache/`。公开网站默认读取这份缓存，因此没有人打开网页时也会到点更新。多次补抓用于降低 GitHub Actions 定时延迟或单次 AKShare 接口失败的影响。
 
 ## 公开给别人看
 

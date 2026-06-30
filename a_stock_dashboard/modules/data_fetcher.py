@@ -36,6 +36,19 @@ def _cache_path(name: str) -> Path:
     return Path(LIVE_CACHE_DIR) / f"{name}.json"
 
 
+def live_cache_status() -> str:
+    names = ["market", "sectors", "overseas", "stocks"]
+    existing = []
+    for name in names:
+        cached = read_fetch_cache(name)
+        if cached is not None:
+            existing.append(f"{name}:{cached.update_time}")
+    if not existing:
+        return "行情缓存：暂无，当前会回退示例数据"
+    latest = max(item.split(":", 1)[1] for item in existing)
+    return f"行情缓存：已生成，最近更新时间 {latest}"
+
+
 def _serialize(value):
     if isinstance(value, pd.DataFrame):
         return {"__type__": "dataframe", "records": value.to_dict("records")}

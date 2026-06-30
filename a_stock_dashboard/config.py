@@ -18,7 +18,7 @@ STOCK_LIST_FILE = DATA_DIR / "stock_list.csv"
 TRADING_PROFILE_FILE = DATA_DIR / "trading_profile.json"
 
 APP_TIMEZONE = ZoneInfo("Asia/Shanghai")
-DATA_REFRESH_TIMES = (time(11, 30), time(14, 30))
+DATA_REFRESH_TIMES = (time(11, 30), time(11, 40), time(11, 50), time(14, 30), time(14, 40), time(14, 50))
 APP_TITLE = "A 股交易数据面板"
 
 
@@ -53,12 +53,10 @@ def current_refresh_bucket(now: datetime | None = None) -> str:
         now = now.replace(tzinfo=APP_TIMEZONE)
 
     refresh_date = now.date()
-    if now.time() < DATA_REFRESH_TIMES[0]:
-        slot = "pre_1130"
-    elif now.time() < DATA_REFRESH_TIMES[1]:
-        slot = "after_1130"
-    else:
-        slot = "after_1430"
+    slot = "pre_open"
+    for refresh_time in DATA_REFRESH_TIMES:
+        if now.time() >= refresh_time:
+            slot = f"after_{refresh_time:%H%M}"
     return f"{refresh_date.isoformat()}:{slot}"
 
 
@@ -77,4 +75,4 @@ def next_refresh_time(now: datetime | None = None) -> datetime:
 def refresh_schedule_caption(now: datetime | None = None) -> str:
     next_time = next_refresh_time(now)
     label = "今日" if next_time.date() == datetime.now(APP_TIMEZONE).date() else "明日"
-    return f"数据计划刷新：每日 11:30、14:30；下次刷新窗口：{label} {next_time:%H:%M}"
+    return f"数据计划刷新：交易日 11:30/11:40/11:50、14:30/14:40/14:50；下次刷新窗口：{label} {next_time:%H:%M}"
