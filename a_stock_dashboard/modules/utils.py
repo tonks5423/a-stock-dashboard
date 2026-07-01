@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Any
 
 import pandas as pd
 
 
 def now_text() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
