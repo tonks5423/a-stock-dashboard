@@ -64,14 +64,16 @@ def _is_successful_cache() -> bool:
     return market.source != "示例数据" and stocks.source not in {"示例数据", "公开持仓兜底"}
 
 
-def refresh_on_open_if_due(now: datetime | None = None, force: bool = False) -> dict[str, Any]:
+def refresh_on_open_if_due(now: datetime | None = None, force: bool = False, source: str = "网页打开时刷新") -> dict[str, Any]:
     now = now or datetime.now(APP_TIMEZONE)
     slot = current_on_open_refresh_slot(now)
+    if force and slot is None:
+        slot = f"{now.date().isoformat()}:manual_test"
     previous = read_refresh_status()
 
-    if not REFRESH_ON_OPEN:
+    if not force and not REFRESH_ON_OPEN:
         return {**previous, "attempted_this_load": False, "reason": "open_refresh_disabled"}
-    if slot is None:
+    if not force and slot is None:
         return {**previous, "attempted_this_load": False, "reason": "before_first_refresh_time"}
     if not force and previous.get("slot") == slot and previous.get("ok") is True:
         return {**previous, "attempted_this_load": False, "reason": "slot_already_refreshed"}
@@ -89,7 +91,7 @@ def refresh_on_open_if_due(now: datetime | None = None, force: bool = False) -> 
         "attempt_time": now_text(),
         "attempted_this_load": True,
         "ok": False,
-        "source": "网页打开时刷新",
+        "source": source,
     }
     try:
         completed = subprocess.run(
@@ -125,9 +127,9 @@ def refresh_status_caption(status: dict[str, Any]) -> str:
     slot = status.get("slot", "暂无刷新窗口")
     attempt_time = status.get("attempt_time", "未知时间")
     if status.get("ok"):
-        return f"网页打开刷新：已执行成功 · {attempt_time} · {slot}"
+        return f"{status.get('source', '网页打开刷新')}：已执行成功 · {attempt_time} · {slot}"
     if status.get("attempted_this_load"):
-        return f"网页打开刷新：本次已尝试但失败 · {attempt_time} · {status.get('error', '原因未知')}"
+        return f"{status.get('source', '网页打开刷新')}：本次已尝试但失败 · {attempt_time} · {status.get('error', '原因未知')}"
     reason_map = {
         "before_first_refresh_time": "未到 11:30/14:30",
         "slot_already_refreshed": "本时段已刷新",

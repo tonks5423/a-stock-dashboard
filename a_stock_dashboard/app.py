@@ -41,9 +41,13 @@ def load_dashboard_data(refresh_bucket: str):
     return market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates
 
 
-refresh_status = refresh_on_open_if_due()
+manual_test_refresh = st.query_params.get("refresh_test") == "1"
+refresh_status = refresh_on_open_if_due(force=manual_test_refresh, source="手动测试刷新" if manual_test_refresh else "网页打开时刷新")
 if refresh_status.get("attempted_this_load"):
     st.cache_data.clear()
+    if manual_test_refresh:
+        st.query_params.clear()
+        st.rerun()
 
 market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates = load_dashboard_data(current_refresh_bucket())
 
@@ -56,6 +60,9 @@ elif refresh_status.get("attempted_this_load"):
     st.error(refresh_status_caption(refresh_status))
 else:
     st.info(refresh_status_caption(refresh_status))
+if st.button("立即测试刷新", help="立刻跑一次真实行情刷新脚本，用于验证接口和页面逻辑；正式自动刷新仍按 11:30/14:30 执行。"):
+    st.query_params["refresh_test"] = "1"
+    st.rerun()
 signal_legend()
 if PUBLIC_MODE:
     st.info(f"当前为公开展示模式：持仓读取 {PUBLIC_HOLDINGS_FILE.name}，用于给亲友查看。")
