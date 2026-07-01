@@ -7,11 +7,14 @@
 ```bash
 A_STOCK_PUBLIC_MODE=1
 A_STOCK_USE_LIVE_DATA=0
+A_STOCK_USE_CACHED_DATA=1
+A_STOCK_REFRESH_ON_OPEN=1
 ```
 
 - `A_STOCK_PUBLIC_MODE=1`：使用 `data/public_holdings.csv`，不读取本地私人文件 `data/holdings.csv`。
-- `A_STOCK_USE_LIVE_DATA=0`：网页读取定时缓存，避免每个访问者现场请求 AKShare。
-- `A_STOCK_USE_CACHED_DATA=1`：优先使用 `data/live_cache/` 中 GitHub Actions 定时抓取的数据。
+- `A_STOCK_USE_LIVE_DATA=0`：页面正常读取缓存，不在普通数据读取路径里直接请求 AKShare。
+- `A_STOCK_USE_CACHED_DATA=1`：优先读取 `data/live_cache/`。
+- `A_STOCK_REFRESH_ON_OPEN=1`：打开网页时检查北京时间 11:30/14:30 刷新点，若本时段未成功刷新，会现场运行刷新脚本并写入缓存。
 - 如果你确认服务器网络稳定，可以把 `A_STOCK_USE_LIVE_DATA` 改成 `1`。
 
 ## Streamlit Community Cloud
@@ -25,9 +28,10 @@ A_STOCK_USE_LIVE_DATA=0
 A_STOCK_PUBLIC_MODE = "1"
 A_STOCK_USE_LIVE_DATA = "0"
 A_STOCK_USE_CACHED_DATA = "1"
+A_STOCK_REFRESH_ON_OPEN = "1"
 ```
 
-5. GitHub Actions 会在北京时间交易日 11:30/11:40/11:50、14:30/14:40/14:50 自动更新 `data/live_cache/`，部署后打开公网地址，左侧菜单可以访问市场总览、外围市场、持仓诊断、今日行动等页面。
+5. 打开公网地址时，应用会检查 11:30/14:30 是否已经到点且本时段是否已刷新。若需要刷新，会运行 `scripts/update_live_cache.py` 并更新 `data/live_cache/`。GitHub Actions 仍作为补充兜底。左侧菜单可以访问市场总览、外围市场、持仓诊断、今日行动等页面。
 
 ## 本地私人模式
 

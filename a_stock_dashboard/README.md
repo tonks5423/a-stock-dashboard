@@ -37,9 +37,13 @@ A_STOCK_USE_LIVE_DATA=1 streamlit run app.py
 
 如果 AKShare 或网络/接口不可用，应用会自动使用示例数据兜底，并在页面顶部显示提示。
 
-## 定时更新真实数据
+## 更新真实数据
 
-GitHub Actions 会在北京时间交易日 11:30、11:40、11:50、14:30、14:40、14:50 自动运行 `scripts/update_live_cache.py`，抓取 AKShare 行情并提交到 `data/live_cache/`。公开网站默认读取这份缓存，因此没有人打开网页时也会到点更新。多次补抓用于降低 GitHub Actions 定时延迟或单次 AKShare 接口失败的影响。
+网页打开时会检查北京时间 11:30、14:30 两个刷新点。若当前时段还没有成功刷新，页面会直接运行 `scripts/update_live_cache.py` 抓取真实行情并写入 `data/live_cache/`，随后重新读取缓存。
+
+刷新状态会写入 `data/live_cache/refresh_status.json` 并显示在首页，用来区分“没到刷新时间、已经刷新、刚尝试失败、数据源不可用”。
+
+GitHub Actions 仍保留北京时间交易日 11:30、11:40、11:50、14:30、14:40、14:50 的补充抓取，但它只作为兜底，不作为唯一刷新机制。
 
 ## 公开给别人看
 

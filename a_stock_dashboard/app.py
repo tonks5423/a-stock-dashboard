@@ -11,6 +11,7 @@ from modules.funds_analyzer import summarize_funds
 from modules.guidance import generate_operation_guidance
 from modules.holding_analyzer import analyze_holding, stock_data_from_holding
 from modules.market_analyzer import summarize_market
+from modules.on_open_refresh import refresh_on_open_if_due, refresh_status_caption
 from modules.overseas_analyzer import analyze_overseas_sentiment
 from modules.sector_analyzer import add_sector_state
 from modules.stock_analyzer import score_stocks, screen_candidates
@@ -40,11 +41,21 @@ def load_dashboard_data(refresh_bucket: str):
     return market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates
 
 
+refresh_status = refresh_on_open_if_due()
+if refresh_status.get("attempted_this_load"):
+    st.cache_data.clear()
+
 market_result, overseas_result, sectors_result, market_summary, overseas_summary, funds_summary, sectors, stocks, candidates = load_dashboard_data(current_refresh_bucket())
 
 st.title(APP_TITLE)
 mode_label = "公开展示模式" if PUBLIC_MODE else "私人本地模式"
 st.caption(f"数据更新时间：{market_result.update_time} · 行情源：{market_result.source} · {safe_live_cache_status()} · {mode_label} · {refresh_schedule_caption()} · 仅做辅助分析，不连接券商账户，不自动下单。")
+if refresh_status.get("ok"):
+    st.success(refresh_status_caption(refresh_status))
+elif refresh_status.get("attempted_this_load"):
+    st.error(refresh_status_caption(refresh_status))
+else:
+    st.info(refresh_status_caption(refresh_status))
 signal_legend()
 if PUBLIC_MODE:
     st.info(f"当前为公开展示模式：持仓读取 {PUBLIC_HOLDINGS_FILE.name}，用于给亲友查看。")

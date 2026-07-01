@@ -6,6 +6,7 @@ from config import APP_TITLE, HOLDINGS_FILE, current_refresh_bucket, refresh_sch
 from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks, load_holdings
 from modules.display import inject_page_style, show_table, signal_legend
 from modules.market_analyzer import summarize_market
+from modules.on_open_refresh import refresh_on_open_if_due
 from modules.risk_analyzer import analyze_stock_risk
 from modules.sector_analyzer import add_sector_state
 from modules.stock_analyzer import score_stocks
@@ -13,6 +14,9 @@ from modules.stock_analyzer import score_stocks
 
 st.set_page_config(page_title=f"{APP_TITLE} · 风险预警", layout="wide")
 inject_page_style()
+refresh_status = refresh_on_open_if_due()
+if refresh_status.get("attempted_this_load"):
+    st.cache_data.clear()
 
 
 @st.cache_data

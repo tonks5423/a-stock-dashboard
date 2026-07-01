@@ -1,0 +1,24 @@
+{
+  "slot": "2026-07-01:after_1130",
+  "attempt_time": "2026-07-01 11:52:49",
+  "attempted_this_load": true,
+  "ok": true,
+  "source": "网页打开时刷新",
+  "returncode": 0,
+  "stdout": "skip sectors: source=示例数据, keep previous cache\nskip overseas: source=示例数据, keep previous cache\nupdated live cache at 2026-07-01 11:53:03\nmarket source=腾讯指数行情, sectors source=示例数据, overseas source=示例数据\nstocks=4\n",
+  "stderr": "/Users/lanbao/Documents/股票/a_stock_dashboard/.venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020\n  warnings.warn(\n",
+  "cache": {
+    "market": {
+      "source": "腾讯指数行情",
+      "update_time": "2026-07-01 11:52:57",
+      "warning": "市场广度、涨跌停家数暂缺；指数和成交额来自腾讯行情兜底。"
+    },
+    "stocks": {
+      "source": "腾讯行情",
+      "update_time": "2026-07-01 11:53:03",
+      "warning": null
+    },
+    "sectors": null,
+    "overseas": null
+  }
+}

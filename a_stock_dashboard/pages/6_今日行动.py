@@ -10,6 +10,7 @@ from modules.display import action_plan_panel, compact_list_panel, holding_actio
 from modules.funds_analyzer import summarize_funds
 from modules.holding_analyzer import analyze_holding, stock_data_from_holding
 from modules.market_analyzer import summarize_market
+from modules.on_open_refresh import refresh_on_open_if_due
 from modules.overseas_analyzer import analyze_overseas_sentiment
 from modules.sector_analyzer import add_sector_state
 from modules.stock_analyzer import score_stocks, screen_candidates
@@ -17,6 +18,9 @@ from modules.stock_analyzer import score_stocks, screen_candidates
 
 st.set_page_config(page_title=f"{APP_TITLE} · 今日行动", layout="wide")
 inject_page_style()
+refresh_status = refresh_on_open_if_due()
+if refresh_status.get("attempted_this_load"):
+    st.cache_data.clear()
 
 
 def safe_live_cache_status() -> str:

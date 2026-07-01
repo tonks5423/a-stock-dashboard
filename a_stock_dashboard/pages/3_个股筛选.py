@@ -6,12 +6,16 @@ from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
 from modules.data_fetcher import fetch_market_overview, fetch_sector_rank, get_sample_stocks
 from modules.display import inject_page_style, show_table, signal_legend
 from modules.market_analyzer import summarize_market
+from modules.on_open_refresh import refresh_on_open_if_due
 from modules.sector_analyzer import add_sector_state
 from modules.stock_analyzer import score_stocks, screen_candidates
 
 
 st.set_page_config(page_title=f"{APP_TITLE} · 个股筛选", layout="wide")
 inject_page_style()
+refresh_status = refresh_on_open_if_due()
+if refresh_status.get("attempted_this_load"):
+    st.cache_data.clear()
 
 
 @st.cache_data

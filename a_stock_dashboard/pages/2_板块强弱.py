@@ -5,11 +5,15 @@ import streamlit as st
 from config import APP_TITLE, current_refresh_bucket, refresh_schedule_caption
 from modules.data_fetcher import fetch_sector_rank
 from modules.display import inject_page_style, show_table, signal_legend
+from modules.on_open_refresh import refresh_on_open_if_due
 from modules.sector_analyzer import add_sector_state
 
 
 st.set_page_config(page_title=f"{APP_TITLE} · 板块强弱", layout="wide")
 inject_page_style()
+refresh_status = refresh_on_open_if_due()
+if refresh_status.get("attempted_this_load"):
+    st.cache_data.clear()
 
 
 @st.cache_data
