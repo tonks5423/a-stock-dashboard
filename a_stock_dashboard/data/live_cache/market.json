@@ -1,5 +1,5 @@
 {
-  "update_time": "2026-07-09 15:00:19",
+  "update_time": "2026-07-09 15:04:40",
   "source": "腾讯指数行情",
   "warning": "市场广度、涨跌停家数暂缺；指数和成交额来自腾讯行情兜底。",
   "data": {
@@ -38,9 +38,9 @@
         }
       ]
     },
-    "amount_yi": 28992.2,
-    "amount_5d_avg_yi": 28992.2,
-    "amount_20d_avg_yi": 28992.2,
+    "amount_yi": 29137.29,
+    "amount_5d_avg_yi": 29137.29,
+    "amount_20d_avg_yi": 29137.29,
     "up_count": 0,
     "down_count": 0,
     "limit_up_count": 0,
