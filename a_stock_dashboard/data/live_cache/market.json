@@ -1,5 +1,5 @@
 {
-  "update_time": "2026-10-29 21:46:30",
+  "update_time": "2026-10-30 18:18:27",
   "source": "腾讯指数行情",
   "warning": "市场广度、涨跌停家数暂缺；指数和成交额来自腾讯行情兜底。",
   "data": {
@@ -9,42 +9,42 @@
         {
           "name": "上证指数",
           "code": "000001",
-          "pct_chg": -0.82
+          "pct_chg": -1.44
         },
         {
           "name": "深证成指",
           "code": "399001",
-          "pct_chg": -2.92
+          "pct_chg": -2.73
         },
         {
           "name": "创业板指",
           "code": "399006",
-          "pct_chg": -4.45
+          "pct_chg": -4.13
         },
         {
           "name": "科创50",
           "code": "000688",
-          "pct_chg": -4.27
+          "pct_chg": -5.48
         },
         {
           "name": "沪深300",
           "code": "000300",
-          "pct_chg": -1.03
+          "pct_chg": -1.39
         },
         {
           "name": "中证1000",
           "code": "000852",
-          "pct_chg": -3.03
+          "pct_chg": -3.41
         }
       ]
     },
-    "amount_yi": 15565.24,
-    "amount_5d_avg_yi": 15565.24,
-    "amount_20d_avg_yi": 15565.24,
+    "amount_yi": 16744.68,
+    "amount_5d_avg_yi": 16744.68,
+    "amount_20d_avg_yi": 16744.68,
     "up_count": 0,
     "down_count": 0,
     "limit_up_count": 0,
     "limit_down_count": 0,
-    "index_avg_pct": -2.7533333333333334
+    "index_avg_pct": -3.096666666666667
   }
 }
