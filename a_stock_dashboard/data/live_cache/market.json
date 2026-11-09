@@ -1,5 +1,5 @@
 {
-  "update_time": "2026-11-06 22:39:09",
+  "update_time": "2026-11-09 19:55:07",
   "source": "AKShare",
   "warning": null,
   "data": {
@@ -38,13 +38,13 @@
         }
       ]
     },
-    "amount_yi": 16716.1,
+    "amount_yi": 14945.56,
     "amount_5d_avg_yi": 9000,
     "amount_20d_avg_yi": 8500,
-    "up_count": 758,
-    "down_count": 4741,
-    "limit_up_count": 43,
-    "limit_down_count": 25,
+    "up_count": 2242,
+    "down_count": 3148,
+    "limit_up_count": 75,
+    "limit_down_count": 6,
     "index_avg_pct": 0.0
   }
 }
