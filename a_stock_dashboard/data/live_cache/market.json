@@ -1,7 +1,7 @@
 {
-  "update_time": "2026-11-10 00:41:42",
-  "source": "AKShare",
-  "warning": null,
+  "update_time": "2026-11-10 00:49:18",
+  "source": "腾讯指数行情",
+  "warning": "市场广度、涨跌停家数暂缺；指数和成交额来自腾讯行情兜底。",
   "data": {
     "indices": {
       "__type__": "dataframe",
@@ -9,42 +9,42 @@
         {
           "name": "上证指数",
           "code": "000001",
-          "pct_chg": 0.0
+          "pct_chg": 0.32
         },
         {
-          "name": "深成指",
+          "name": "深证成指",
           "code": "399001",
-          "pct_chg": 0.0
+          "pct_chg": -0.27
         },
         {
           "name": "创业板指",
           "code": "399006",
-          "pct_chg": 0.0
+          "pct_chg": -0.27
         },
         {
           "name": "科创50",
           "code": "000688",
-          "pct_chg": 0.0
+          "pct_chg": 0.3
         },
         {
           "name": "沪深300",
           "code": "000300",
-          "pct_chg": 0.0
+          "pct_chg": 0.05
         },
         {
           "name": "中证1000",
           "code": "000852",
-          "pct_chg": 0.0
+          "pct_chg": -0.09
         }
       ]
     },
-    "amount_yi": 14945.56,
-    "amount_5d_avg_yi": 9000,
-    "amount_20d_avg_yi": 8500,
-    "up_count": 2242,
-    "down_count": 3148,
-    "limit_up_count": 75,
-    "limit_down_count": 6,
-    "index_avg_pct": 0.0
+    "amount_yi": 14826.13,
+    "amount_5d_avg_yi": 14826.13,
+    "amount_20d_avg_yi": 14826.13,
+    "up_count": 0,
+    "down_count": 0,
+    "limit_up_count": 0,
+    "limit_down_count": 0,
+    "index_avg_pct": 0.006666666666666658
   }
 }
